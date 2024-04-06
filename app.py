@@ -1,5 +1,7 @@
 from flask import Flask
-from waitress import serve
+from flask import send_file
+import os
+import re
 from prometheus_flask_exporter import PrometheusMetrics
 
 # initializing app instance and metrics collector
@@ -13,5 +15,16 @@ def count_route():
     return {'body': 'hello Ilya'}
 
 
+@app.route('/get_video')
+def get_video():
+    src_path = 'src/'
+    file_path = 'src/test_video_1.mp4'
+
+    if not os.path.isfile(file_path):
+        return {'error': 'Video file not found'}, 404
+
+    return send_file(file_path, mimetype='video/mp4')
+
+
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0')
+    app.run(host='localhost', port=8080, threaded=True)
