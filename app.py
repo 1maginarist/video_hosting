@@ -1,11 +1,13 @@
 from flask import Flask
 from flask import send_file
+from flask_cors import CORS
 import os
 import re
 from prometheus_flask_exporter import PrometheusMetrics
 
 # initializing app instance and metrics collector
 app = Flask(__name__)
+CORS(app)
 metrics = PrometheusMetrics(app)
 
 
@@ -27,4 +29,4 @@ def get_video():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8080, threaded=True)
+    app.run(host='89.23.112.6', port=8080, threaded=True)
