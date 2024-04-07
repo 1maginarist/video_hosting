@@ -1,23 +1,28 @@
 from flask import Flask
 from flask import send_file
 from flask_cors import CORS
+import logging
 import os
 import re
 from prometheus_flask_exporter import PrometheusMetrics
 
 # initializing app instance and metrics collector
 app = Flask(__name__)
-CORS(app)
 metrics = PrometheusMetrics(app)
 
+app.config['CORS_HEADERS'] = 'Content-Type'
 
-@app.route('/hello')
+logging.getLogger('flask_cors').level = logging.DEBUG
+
+CORS(app)
+
+@app.route('/hello', methods=['GET'])
 def count_route():
 
     return {'body': 'hello Ilya'}
 
 
-@app.route('/get_video')
+@app.route('/get_video', methods=['GET'])
 def get_video():
     src_path = 'src/'
     file_path = 'src/test_video_1.mp4'
@@ -29,4 +34,4 @@ def get_video():
 
 
 if __name__ == '__main__':
-    app.run(host='89.23.112.6', port=8080, threaded=True)
+    app.run(host='localhost', port=8080, threaded=True)
