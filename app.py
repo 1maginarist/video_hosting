@@ -20,9 +20,12 @@ g.S3_resource = boto3.resource('s3')
 @app.before_request
 def before_request():
     pass
+
+
 @app.teardown_request
 def teardown_request():
     pass
+
 
 @app.route('/hello', methods=['GET'])
 def count_route():
@@ -39,6 +42,128 @@ def get_video():
         return {'error': 'Video file not found'}, 404
 
     return send_file(file_path, mimetype='video/mp4')
+
+#--------------------------------------------------------------------------------------------------
+
+
+@app.route('/reg_user', methods=['POST'])
+def reg_user():
+    pass
+
+
+@app.route('/reg_company', methods=['POST'])
+def reg_company():
+    pass
+
+
+@app.route('/reg_sub_company_user', methods=['POST'])
+def reg_sub_company_user():
+    pass
+
+
+@app.route('/auth', methods=['POST'])
+def auth():
+    pass
+
+
+@app.route('/show_preview_courses', methods=['GET'])
+def show_preview_courses():
+    pass
+
+
+@app.route('/show_preview_companies', methods=['GET'])
+def show_preview_companies():
+    pass
+
+
+@app.route('/user_courses', methods=['GET'])
+def user_courses():
+    pass
+
+
+@app.route('/play_video', methods=['POST', 'GET'])
+def play_video():
+    pass
+
+
+@app.route('/upload_video', methods=['POST'])
+def upload_video():
+    pass
+
+
+@app.route('/edit_video', methods=['POST'])
+def edit_video():
+    pass
+
+
+@app.route('/delete_video', methods=['POST'])
+def delete_video():
+    pass
+
+
+@app.route('/make_course', methods=['POST'])
+def make_course():
+    pass
+
+
+@app.route('/edit_course', methods=['POST'])
+def edit_course():
+    pass
+
+
+@app.route('/delete_course', methods=['POST'])
+def delete_course():
+    pass
+
+
+@app.route('/view_course', methods=['GET'])
+def view_course():
+    pass
+
+
+@app.route('/make_module', methods=['POST'])
+def make_module():
+    pass
+
+
+@app.route('/delete_module', methods=['POST'])
+def delete_module():
+    pass
+
+
+@app.route('/edit_module', methods=['POST'])
+def edit_module():
+    pass
+
+
+@app.route('/view_module', methods=['GET'])
+def view_module():
+    pass
+
+
+@app.route('/search_course', methods=['GET'])
+def search_course():
+    pass
+
+
+@app.route('/search_video', methods=['GET'])
+def search_video():
+    pass
+
+
+@app.route('/search_company', methods=['GET'])
+def search_company():
+    pass
+
+
+@app.route('/show_company_page', methods=['GET'])
+def show_company_page():
+    pass
+
+
+@app.route('/show_user_page', methods=['GET'])
+def show_user_page():
+    pass
 
 
 if __name__ == '__main__':
