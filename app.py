@@ -2,11 +2,22 @@ from flask import Flask
 from flask import send_file
 from flask_cors import CORS
 import logging
+from psycopg2 import connect
 import boto3
+import yaml
 import os
 import uuid
 from flask import g
 from prometheus_flask_exporter import PrometheusMetrics
+
+
+def get_settings():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    yaml_path = os.path.join(current_dir, 'settings.yaml')
+    with open(rf'{yaml_path}', 'r', encoding='UTF-8') as file:
+        settings = yaml.safe_load(file)
+        return settings
+
 
 # initializing app instance and metrics collector
 app = Flask(__name__)
@@ -14,7 +25,15 @@ metrics = PrometheusMetrics(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 logging.getLogger('flask_cors').level = logging.DEBUG
 CORS(app)
-g.S3_resource = boto3.resource('s3')
+#g.S3_resource = boto3.resource('s3')
+SETTINGS = get_settings()
+
+db_conn = connect(database=SETTINGS['postgres']['DBNAME'],
+                  host=SETTINGS['postgres']['HOST'],
+                  user=SETTINGS['postgres']['USER'],
+                  password=SETTINGS['postgres']['PASS'],
+                  port=SETTINGS['postgres']['PORT'])
+cursor = db_conn.cursor()
 
 
 @app.before_request
