@@ -24,12 +24,12 @@ SETTINGS = get_settings()
 s3 = S3()
 s3= SETTINGS
 
-db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
-                  host=f"{SETTINGS['postgres']['HOST']}",
-                  user=f"{SETTINGS['postgres']['USER']}",
-                  password=f"{SETTINGS['postgres']['PASS']}",
-                  port=f"{SETTINGS['postgres']['PORT']}")
-cursor = db_conn.cursor()
+#db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
+#                  host=f"{SETTINGS['postgres']['HOST']}",
+#                  user=f"{SETTINGS['postgres']['USER']}",
+#                  password=f"{SETTINGS['postgres']['PASS']}",
+#                  port=f"{SETTINGS['postgres']['PORT']}")
+#cursor = db_conn.cursor()
 print()
 
 
@@ -68,8 +68,8 @@ def reg_user():
     data = request.args
     private_token = generate_file_uuid()
 
-    response = cursor.execute("""insert into main.users (uuid, privilege) values(%s, %s)""", (private_token, '1'))
-    db_conn.commit()
+#    response = cursor.execute("""insert into main.users (uuid, privilege) values(%s, %s)""", (private_token, '1'))
+#    db_conn.commit()
 
     return {'status_code': 200}
 
