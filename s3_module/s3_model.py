@@ -45,10 +45,9 @@ class S3:
 
         :return:
         """
-        with open("src/2.jpg", "rb") as f:
-            file_uuid = generate_file_uuid()
-            self.client.upload_fileobj(f, self._bucket_name, file_uuid)
-            # блок записи в бд
+        file_uuid = generate_file_uuid()
+        self.client.upload_fileobj(fileobj, self._bucket_name, file_uuid)
+        # блок записи в бд
 
     def check_for_success_upload(self):
         """

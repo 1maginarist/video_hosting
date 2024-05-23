@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask import send_file
 from flask_cors import CORS
 import logging
@@ -10,7 +10,7 @@ import uuid
 from flask import g
 from prometheus_flask_exporter import PrometheusMetrics
 
-from helpers.service_helpers import get_settings
+from helpers.service_helpers import get_settings, generate_file_uuid
 from s3_module.s3_model import S3
 
 
@@ -24,22 +24,23 @@ SETTINGS = get_settings()
 s3 = S3()
 s3= SETTINGS
 
-'''db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
+db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
                   host=f"{SETTINGS['postgres']['HOST']}",
                   user=f"{SETTINGS['postgres']['USER']}",
                   password=f"{SETTINGS['postgres']['PASS']}",
                   port=f"{SETTINGS['postgres']['PORT']}")
-cursor = db_conn.cursor()'''
+cursor = db_conn.cursor()
+print()
 
 
-@app.before_request
+'''@app.before_request
 def before_request():
-    pass
+    pass'''
 
 
-@app.teardown_request
+'''@app.teardown_request
 def teardown_request():
-    pass
+    pass'''
 
 
 @app.route('/hello', methods=['GET'])
@@ -63,7 +64,14 @@ def get_video():
 
 @app.route('/reg_user', methods=['POST'])
 def reg_user():
-    pass
+    creds = {}
+    data = request.args
+    private_token = generate_file_uuid()
+
+    response = cursor.execute("""insert into main.users (uuid, privilege) values(%s, %s)""", (private_token, '1'))
+    db_conn.commit()
+
+    return {'status_code': 200}
 
 
 @app.route('/reg_company', methods=['POST'])
@@ -103,7 +111,9 @@ def play_video():
 
 @app.route('/upload_video', methods=['POST'])
 def upload_video():
-    pass
+    data = request.args
+    s3.upload_file(data['video'])
+    print()
 
 
 @app.route('/edit_video', methods=['POST'])
