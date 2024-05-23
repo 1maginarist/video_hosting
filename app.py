@@ -49,10 +49,10 @@ def count_route():
     return {'body': 'hello Ilya'}
 
 
-@app.route('/get_video_1', methods=['GET'])
+@app.route('/get_video/1', methods=['GET'])
 def get_video():
     src_path = 'src/'
-    file_path = 'src/test_video_1.mp4'
+    file_path = 'src/small_video.mp4'
 
     if not os.path.isfile(file_path):
         return {'error': 'Video file not found'}, 404
