@@ -10,7 +10,7 @@ import uuid
 from flask import g
 from prometheus_flask_exporter import PrometheusMetrics
 
-from helpers.service_helpers import get_settings, generate_file_uuid
+from helpers.service_helpers import get_settings, generate_file_uuid, make_hash_from_cred
 from s3_module.s3_model import S3
 
 
@@ -22,15 +22,13 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 CORS(app)
 SETTINGS = get_settings()
 s3 = S3()
-s3= SETTINGS
 
-#db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
-#                  host=f"{SETTINGS['postgres']['HOST']}",
-#                  user=f"{SETTINGS['postgres']['USER']}",
-#                  password=f"{SETTINGS['postgres']['PASS']}",
-#                  port=f"{SETTINGS['postgres']['PORT']}")
-#cursor = db_conn.cursor()
-print()
+db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
+                  host=f"{SETTINGS['postgres']['HOST']}",
+                  user=f"{SETTINGS['postgres']['USER']}",
+                  password=f"{SETTINGS['postgres']['PASS']}",
+                  port=f"{SETTINGS['postgres']['PORT']}")
+cursor = db_conn.cursor()
 
 
 '''@app.before_request
@@ -64,12 +62,15 @@ def get_video():
 
 @app.route('/reg_user', methods=['POST'])
 def reg_user():
-    creds = {}
     data = request.args
+    creds = {}
+    pass_hash = make_hash_from_cred(data['password'])
     private_token = generate_file_uuid()
 
-#    response = cursor.execute("""insert into main.users (uuid, privilege) values(%s, %s)""", (private_token, '1'))
-#    db_conn.commit()
+    response = cursor.execute("""insert into main.users (uuid) values(%s)""", (private_token,))
+    response = cursor.execute("""insert into main.user_creds (user_id, login, password) values(%s, %s, %s)""",
+                              (private_token, data['login'], pass_hash))
+    db_conn.commit()
 
     return {'status_code': 200}
 

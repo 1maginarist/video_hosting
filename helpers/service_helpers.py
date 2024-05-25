@@ -20,5 +20,5 @@ def check_for_uuid_existence():
     pass
 
 
-def make_hash_from_cred(str: str):
-    return hashlib.sha256(str.encode()).hexdigest()
+def make_hash_from_cred(string: str):
+    return hashlib.sha256(string.encode()).hexdigest()
