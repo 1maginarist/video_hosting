@@ -62,7 +62,7 @@ def get_video():
 
 @app.route('/reg_user', methods=['POST'])
 def reg_user():
-    data = request.args
+    data = request.get_json()
     creds = {}
     pass_hash = make_hash_from_cred(data['password'])
     private_token = generate_file_uuid()
