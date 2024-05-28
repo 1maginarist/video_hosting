@@ -7,11 +7,13 @@ import boto3
 import yaml
 import os
 import uuid
+from sqlalchemy import text
 from flask import g
 from prometheus_flask_exporter import PrometheusMetrics
 
 from helpers.service_helpers import get_settings, generate_file_uuid, make_hash_from_cred
-from s3_module.s3_model import S3
+from modules.s3 import S3
+from modules.postgres import Postgres
 
 
 # initializing app instance and metrics collector
@@ -22,29 +24,19 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 CORS(app)
 SETTINGS = get_settings()
 s3 = S3()
-
-db_conn = connect(database=f"{SETTINGS['postgres']['DBNAME']}",
-                  host=f"{SETTINGS['postgres']['HOST']}",
-                  user=f"{SETTINGS['postgres']['USER']}",
-                  password=f"{SETTINGS['postgres']['PASS']}",
-                  port=f"{SETTINGS['postgres']['PORT']}")
-cursor = db_conn.cursor()
+postgres = Postgres()
 
 
-'''@app.before_request
+@app.before_request
 def before_request():
-    pass'''
+    g.db_session = postgres.get_connection()
 
 
-'''@app.teardown_request
-def teardown_request():
-    pass'''
-
-
-@app.route('/hello', methods=['GET'])
-def count_route():
-
-    return {'body': 'hello Ilya'}
+@app.teardown_request
+def teardown_request(exception):
+    db_session = g.pop('db_session', None)
+    if db_session is not None:
+        db_session.close()
 
 
 @app.route('/get_video/1', methods=['GET'])
@@ -63,32 +55,74 @@ def get_video():
 @app.route('/reg_user', methods=['POST'])
 def reg_user():
     data = request.get_json()
-    creds = {}
     pass_hash = make_hash_from_cred(data['password'])
     private_token = generate_file_uuid()
+    db_session = g.db_session
 
-    response = cursor.execute("""insert into main.users (uuid) values(%s)""", (private_token,))
-    response = cursor.execute("""insert into main.user_creds (user_id, login, password) values(%s, %s, %s)""",
-                              (private_token, data['login'], pass_hash))
-    db_conn.commit()
+    query_users = "INSERT INTO main.users (uuid) VALUES (:private_token);"
+    query_users_creds = f"insert into main.user_creds (user_id, login, password) values(" \
+                        f":private_token, :login, :hash_pass);"
+
+    postgres.execute_custom_query(query_users, db_session, private_token=private_token)
+    postgres.execute_custom_query(query_users_creds, db_session,
+                                  private_token=private_token,
+                                  login=data['login'],
+                                  hash_pass=pass_hash)
 
     return {'status_code': 200}
 
 
 @app.route('/reg_company', methods=['POST'])
 def reg_company():
-    pass
+    data = request.get_json()
+    pass_hash = make_hash_from_cred(data['password'])
+    private_token = generate_file_uuid()
+    db_session = g.db_session
 
+    query_companies = "INSERT INTO main.companies (uuid) VALUES (:private_token);"
+    query_companies_creds = f"insert into main.company_creds (company_id, login, password) values(" \
+                            f":private_token, :login, :hash_pass);"
+
+    postgres.execute_custom_query(query_companies, db_session, private_token=private_token)
+    postgres.execute_custom_query(query_companies_creds, db_session,
+                                  private_token=private_token,
+                                  login=data['login'],
+                                  hash_pass=pass_hash)
+
+    return {'status_code': 200}
 
 @app.route('/reg_sub_company_user', methods=['POST'])
 def reg_sub_company_user():
     pass
 
 
-@app.route('/auth', methods=['POST'])
-def auth():
-    pass
+@app.route('/company_auth', methods=['POST'])
+def company_auth():
+    data = request.get_json()
+    pass_hash = make_hash_from_cred(data['password'])
+    db_session = g.db_session
 
+    query_auth = "SELECT * FROM main.company_creds WHERE login = :login and password = :pass_hash;"
+    result = postgres.execute_custom_query(query_auth, db_session, login=data['login'], pass_hash=pass_hash).fetchone()
+
+    if result:
+        return {'status_code': 200}
+    else:
+        return {'status_code': 400}
+
+@app.route('/user_auth', methods=['POST'])
+def user_auth():
+    data = request.get_json()
+    pass_hash = make_hash_from_cred(data['password'])
+    db_session = g.db_session
+
+    query_auth = "SELECT * FROM main.user_creds WHERE login = :login and password = :pass_hash;"
+    result = postgres.execute_custom_query(query_auth, db_session, login=data['login'], pass_hash=pass_hash).fetchone()
+
+    if result:
+        return {'status_code': 200}
+    else:
+        return {'status_code': 400}
 
 @app.route('/show_preview_courses', methods=['GET'])
 def show_preview_courses():
@@ -112,7 +146,7 @@ def play_video():
 
 @app.route('/upload_video', methods=['POST'])
 def upload_video():
-    data = request.args
+    data = request.get_json()
     s3.upload_file(data['video'])
     print()
 
