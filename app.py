@@ -8,7 +8,7 @@ import yaml
 import os
 import uuid
 from sqlalchemy import text
-from flask import g
+from flask import g, make_response, jsonify
 from prometheus_flask_exporter import PrometheusMetrics
 
 from helpers.service_helpers import get_settings, generate_file_uuid, make_hash_from_cred
@@ -120,9 +120,11 @@ def user_auth():
     result = postgres.execute_custom_query(query_auth, db_session, login=data['login'], pass_hash=pass_hash).fetchone()
 
     if result:
-        return {'status_code': 200}
+        response = {'status_code': 200}
+        return make_response(jsonify(response), 200)
     else:
-        return {'status_code': 400}
+        response = {'status_code': 400}
+        return make_response(jsonify(response), 400)
 
 @app.route('/show_preview_courses', methods=['GET'])
 def show_preview_courses():
